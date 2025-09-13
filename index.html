@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluff Score Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar with 10 Feature Boxes in 2x5 Grid -->
+    <nav class="navbar">
+        <h1 class="current-player-title">Current Player</h1>
+        <div class="features-grid">
+            <div class="feature-box">
+                <h3>Voice Consistency</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="15"></div>
+                </div>
+                <span class="percentage">15%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Eye Movement</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="35"></div>
+                </div>
+                <span class="percentage">35%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Facial Expression</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="55"></div>
+                </div>
+                <span class="percentage">55%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Body Language</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="75"></div>
+                </div>
+                <span class="percentage">75%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Speech Patterns</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="95"></div>
+                </div>
+                <span class="percentage">95%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Micro Expressions</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="25"></div>
+                </div>
+                <span class="percentage">25%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Heart Rate</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="45"></div>
+                </div>
+                <span class="percentage">45%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Response Time</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="65"></div>
+                </div>
+                <span class="percentage">65%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Gesture Analysis</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="85"></div>
+                </div>
+                <span class="percentage">85%</span>
+            </div>
+            <div class="feature-box">
+                <h3>Stress Indicators</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" data-percentage="10"></div>
+                </div>
+                <span class="percentage">10%</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="main-container">
+        <!-- Leaderboard Section -->
+        <div class="leaderboard-section">
+            <div class="leaderboard">
+                <h2>Leaderboard</h2>
+                <div class="leaderboard-list">
+                    <div class="player-item">
+                        <span class="rank">1.</span>
+                        <span class="player-name">Alice</span>
+                        <span class="player-score">92</span>
+                    </div>
+                    <div class="player-item">
+                        <span class="rank">2.</span>
+                        <span class="player-name">Bob</span>
+                        <span class="player-score">87</span>
+                    </div>
+                    <div class="player-item">
+                        <span class="rank">3.</span>
+                        <span class="player-name">Charlie</span>
+                        <span class="player-score">81</span>
+                    </div>
+                    <div class="player-item">
+                        <span class="rank">4.</span>
+                        <span class="player-name">Diana</span>
+                        <span class="player-score">76</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leaderboard Control Buttons -->
+            <div class="leaderboard-controls">
+                <button class="control-btn add-btn">Add New Player</button>
+                <button class="control-btn remove-btn">Remove Last Player</button>
+            </div>
+        </div>
+
+        <!-- Cat Score Display -->
+        <div class="cat-score-section">
+            <div class="cat-container">
+                <img src="Purple_Cat.jpg" alt="Detective Cat" class="cat-image">
+                <div class="score-display">
+                    <span class="score-label">Final Bluff Score</span>
+                    <span class="score-value" id="finalScore">73</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Name -->
+    <div class="app-name">Catch Meow</div>
+
+    <script src="script.js"></script>   
+</body>
+</html>
