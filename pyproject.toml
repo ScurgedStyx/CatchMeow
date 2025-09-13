@@ -1,0 +1,11 @@
+[project]
+name = "mcp-server-template"
+version = "0.1.0"
+description = "Python MCP Server template"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [{ name = "Alpic" }]
+keywords = ["mcp", "llm", "alpic", "python"]
+dependencies = [
+    "mcp",
+]
