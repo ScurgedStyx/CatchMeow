@@ -1,103 +1,125 @@
-# mcp-server-template-python
+# Catch Meow Voice Analysis - Quick Start Guide
 
-A very simple Python template for building MCP servers using Streamable HTTP transport.
+## 🎯 What This System Does
 
-## Overview
-This template provides a foundation for creating MCP servers that can communicate with AI assistants and other MCP clients. It includes a simple HTTP server implementation with example tools, resources & prompts to help you get started building your own MCP integrations.
+This system analyzes voice recordings to detect potential bluffs using advanced audio feature extraction and baseline comparison algorithms. It integrates with the Catch Meow game interface to provide real-time voice analysis results.
 
-## Prerequisites
-- Install uv (https://docs.astral.sh/uv/getting-started/installation/)
+## 📁 File Overview
 
-## Installation
+### Core Audio Analysis Files
+- **`audio_extractor.py`** - Extracts comprehensive speech features from audio files using librosa
+- **`bluff_calculator.py`** - Implements advanced baseline comparison algorithm for bluff detection  
+- **`audio_pipeline.py`** - Combines extraction and calculation into unified analysis pipeline
+- **`web_server.py`** - Flask backend server for file uploads and analysis
 
-1. Clone the repository:
+### Frontend Integration Files
+- **`script.js`** - Enhanced JavaScript with audio analysis integration and file upload UI
+- **`styles.css`** - Additional styling for modal dialogs, progress indicators, and upload buttons
+- **`index.html`** - Main GUI interface (assumed to exist in your project)
 
+### Utilities
+- **`demo_launcher.py`** - Simple launcher to open GUI demo without backend dependencies
+- **`README.md`** - This guide
+
+## 🚀 How to Run
+
+### Option 1: Demo Mode (No Dependencies Required)
 ```bash
-git clone git@github.com:alpic-ai/mcp-server-template-python.git
-cd mcp-server-template-python
+python demo_launcher.py
 ```
+- Opens the GUI in your browser
+- Uses simulated analysis results
+- Perfect for testing the interface
 
-2. Install python version & dependencies:
+### Option 2: Full Analysis Mode (Requires Dependencies)
+1. Install Python dependencies:
+   ```bash
+   pip install flask flask-cors librosa numpy
+   ```
 
-```bash
-uv python install
-uv sync --locked
-```
+2. Start the Flask backend:
+   ```bash
+   python web_server.py
+   ```
 
-## Usage
+3. Open browser to: `http://localhost:5000`
 
-Start the server on port 3000:
+4. Upload .wav audio files and get real analysis results!
 
-```bash
-uv run main.py
-```
+## 🎤 How to Use the Voice Analysis
 
-## Running the Inspector
+1. **Upload Audio Files**: Click the "Upload Audio Files" button and select 1-5 audio files
+2. **Watch Analysis**: The system will analyze each file and show progress
+3. **View Results**: Results appear in a modal with detailed metrics:
+   - **Bluff Score**: 0-100% likelihood of bluffing
+   - **Confidence**: How confident the algorithm is
+   - **Key Metrics**: Pause patterns, pitch variations, energy levels
 
-### Requirements
-- Node.js: ^22.7.5
+## 📊 Advanced Algorithm Features
 
-### Quick Start (UI mode)
-To get up and running right away with the UI, just execute the following:
-```bash
-npx @modelcontextprotocol/inspector
-```
+The system uses a sophisticated baseline comparison method:
+- **Conversational vs Reading Baselines**: Compares speech patterns against natural vs scripted speech
+- **Robust Statistics**: Uses MAD (Median Absolute Deviation) for outlier-resistant analysis
+- **Weighted Feature Contributions**: Combines multiple voice characteristics intelligently
+- **Session Management**: Tracks multiple recordings for improved accuracy
 
-The inspector server will start up and the UI will be accessible at http://localhost:6274.
+## 🔧 Technical Details
 
-You can test your server locally by selecting:
-- Transport Type: Streamable HTTP
-- URL: http://127.0.0.1:3000/mcp
+### Supported Audio Formats
+- WAV files (recommended)
+- MP3 files 
+- M4A files
 
-## Development
+### Voice Features Analyzed
+- **Pause Detection**: Frequency and duration of speech pauses
+- **Fundamental Frequency (F0)**: Pitch variations and patterns
+- **RMS Energy**: Volume and energy level changes
+- **Spectral Features**: Voice quality characteristics
 
-### Adding New Tools
+### Performance
+- Processes typical 30-second audio clips in 1-3 seconds
+- Handles batch uploads of up to 5 files
+- Automatic cleanup of uploaded files
 
-To add a new tool, modify `main.py`:
+## 🎮 Integration with Catch Meow Game
 
-```python
-@mcp.tool(
-    title="Your Tool Name",
-    description="Tool Description for the LLM",
-)
-async def new_tool(
-    tool_param1: str = Field(description="The description of the param1 for the LLM"), 
-    tool_param2: float = Field(description="The description of the param2 for the LLM") 
-)-> str:
-    """The new tool underlying method"""
-    result = await some_api_call(tool_param1, tool_param2)
-    return result
-```
+The voice analysis integrates seamlessly with your existing game:
+- Results update the main leaderboard
+- Scores are color-coded (green = likely truthful, red = likely bluffing)
+- Modal displays show detailed analysis breakdowns
+- Progress indicators keep players engaged during analysis
 
-### Adding New Resources
+## 🐛 Troubleshooting
 
-To add a new resource, modify `main.py`:
+### Demo Mode Issues
+- If demo_launcher.py doesn't open browser, manually copy the file:// URL
+- Make sure index.html exists in the same directory
 
-```python
-@mcp.resource(
-    uri="your-scheme://{param1}/{param2}",
-    description="Description of what this resource provides",
-    name="Your Resource Name",
-)
-def your_resource(param1: str, param2: str) -> str:
-    """The resource template implementation"""
-    # Your resource logic here
-    return f"Resource content for {param1} and {param2}"
-```
+### Full Mode Issues
+- **Import errors**: Install dependencies with `pip install flask flask-cors librosa numpy`
+- **Port conflicts**: If port 5000 is busy, the server will try 5001, 5002, etc.
+- **File upload fails**: Check file format (WAV recommended) and size (<10MB)
+- **Analysis errors**: Verify audio files have clear speech content
 
-The URI template uses `{param_name}` syntax to define parameters that will be extracted from the resource URI and passed to your function.
+### Audio Quality Tips
+- Use WAV files for best results
+- Ensure clear speech with minimal background noise
+- 15-60 second clips work best
+- Single speaker recordings preferred
 
-### Adding New Prompts
+## 🎯 Next Steps
 
-To add a new prompt , modify `main.py`:
+1. Test with demo mode first to verify GUI works
+2. Install dependencies and try full analysis mode
+3. Upload some sample audio files to test the algorithm
+4. Integrate with your complete Catch Meow game logic
+5. Customize the UI styling to match your game theme
 
-```python
-@mcp.prompt("")
-async def your_prompt(
-    prompt_param: str = Field(description="The description of the param for the user")
-) -> str:
-    """Generate a helpful prompt"""
+## 📝 Notes
 
-    return f"You are a friendly assistant, help the user and don't forget to {prompt_param}."
+- The demo mode shows realistic but simulated results
+- Real analysis requires audio processing dependencies
+- The algorithm improves with more baseline data
+- Consider adding user feedback to refine scoring
 
-```
+Happy analyzing! 🎤✨
