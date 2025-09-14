@@ -26,6 +26,8 @@ def extract_features(path, sr=16000, frame_length=1024, hop_length=256, top_db=3
     else:
         mean_rms_db = -120.0
 
+    max_rms_db = float(np.max(rms_db))
+
     fmin, fmax = 75, 300
     mean_f0 = 0.0
     if len(y_speech) >= hop_length * 2:
@@ -49,6 +51,7 @@ def extract_features(path, sr=16000, frame_length=1024, hop_length=256, top_db=3
         "pause_ratio": round(pause_ratio, 3),
         "pause_count": int(pause_count),
         "mean_f0": round(mean_f0, 2),
+        "max_rms_db": round(max_rms_db, 2),
         "mean_rms_db": round(mean_rms_db, 2),
     }
 
