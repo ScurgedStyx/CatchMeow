@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>WAV Voice Recorder with S3 Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --pad: 14px; }
+    body { font-family: system-ui, Arial, sans-serif; margin: 40px; max-width: 720px; }
+    h1 { margin: 0 0 12px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    button { padding: 10px 16px; font-size: 15px; cursor: pointer; }
+    .status { margin: 12px 0; color: #333; }
+    audio { display: block; margin-top: 16px; width: 100%; }
+    #download { display: inline-block; margin-top: 10px; }
+    #uploadBtn { background-color: #007acc; color: white; border: none; border-radius: 4px; }
+    #uploadBtn:disabled { background-color: #ccc; }
+    .upload-status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    #config { margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; }
+    #config input { margin: 5px; padding: 5px; width: 300px; }
+    #config label { display: block; margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <h1>WAV Voice Recorder with S3 Upload</h1>
+  
+  <!-- Configuration Section -->
+  <div id="config">
+    <h3>MCP Server Configuration</h3>
+    <label>
+      MCP Server URL:
+      <input type="text" id="mcpServerUrl" placeholder="http://localhost:3000" value="http://localhost:3000">
+    </label>
+  </div>
+  
+  <div class="row">
+    <button id="start">Start Recording</button>
+    <button id="stop" disabled>Stop Recording</button>
+  </div>
+  
+  <div class="status" id="status"></div>
+  <div id="uploadStatus"></div>
+  <a id="download"></a>
+
+  <script>
+    let audioCtx, micStream, sourceNode, workletNode, procNode;
+    let recording = false;
+    let buffers = [];
+    let wavBlob = null;
+    let currentS3Url = null;
+
+    const startBtn = document.getElementById('start');
+    const stopBtn  = document.getElementById('stop');
+    const statusEl = document.getElementById('status');
+    const uploadStatusEl = document.getElementById('uploadStatus');
+    const dl       = document.getElementById('download');
+    const mcpServerUrl = document.getElementById('mcpServerUrl');
+
+    function setStatus(t){ statusEl.textContent = t; }
+    
+    function setUploadStatus(message, type = 'info') {
+      uploadStatusEl.innerHTML = `<div class="upload-status ${type}">${message}</div>`;
+    }
+    
+    function clearUploadStatus() {
+      uploadStatusEl.innerHTML = '';
+    }
+
+    // Audio processing functions (same as before)
+    function f32To16BitPCM(float32) {
+      const out = new Int16Array(float32.length);
+      for (let i = 0; i < float32.length; i++) {
+        let s = Math.max(-1, Math.min(1, float32[i]));
+        out[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return out;
+    }
+    
+    function concatFloat32(chunks) {
+      let len = 0;
+      for (const c of chunks) len += c.length;
+      const out = new Float32Array(len);
+      let off = 0;
+      for (const c of chunks) { out.set(c, off); off += c.length; }
+      return out;
+    }
+    
+    function encodeWAV(float32, sampleRate) {
+      const pcm16 = f32To16BitPCM(float32);
+      const byteRate = sampleRate * 2;
+      const blockAlign = 2;
+      const dataSize = pcm16.length * 2;
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view = new DataView(buffer);
+
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + dataSize, true);
+      writeString(view, 8, 'WAVE');
+
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, byteRate, true);
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, 16, true);
+
+      writeString(view, 36, 'data');
+      view.setUint32(40, dataSize, true);
+
+      let offset = 44;
+      for (let i = 0; i < pcm16.length; i++, offset += 2) {
+        view.setInt16(offset, pcm16[i], true);
+      }
+      return new Blob([view], { type: 'audio/wav' });
+    }
+    
+    function writeString(view, offset, str) {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+      }
+    }
+
+    async function startRecording() {
+      if (recording) return;
+      buffers = [];
+      wavBlob = null;
+      currentS3Url = null;
+      clearUploadStatus();
+
+      // Use default sample rate (let browser decide)
+      const desiredRate = undefined;
+
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+        sampleRate: desiredRate
+      });
+
+      sourceNode = audioCtx.createMediaStreamSource(micStream);
+
+      try {
+        const workletCode = `
+          class RecorderProcessor extends AudioWorkletProcessor {
+            process(inputs) {
+              const input = inputs[0];
+              if (input && input[0]) {
+                this.port.postMessage(input[0]);
+              }
+              return true;
+            }
+          }
+          registerProcessor('recorder-processor', RecorderProcessor);
+        `;
+        const blobURL = URL.createObjectURL(new Blob([workletCode], { type: 'application/javascript' }));
+        await audioCtx.audioWorklet.addModule(blobURL);
+
+        workletNode = new AudioWorkletNode(audioCtx, 'recorder-processor', { numberOfInputs: 1, numberOfOutputs: 0 });
+        workletNode.port.onmessage = (e) => {
+          buffers.push(new Float32Array(e.data));
+        };
+        sourceNode.connect(workletNode);
+
+      } catch (err) {
+        const BUFFER_SIZE = 4096;
+        procNode = audioCtx.createScriptProcessor(BUFFER_SIZE, 1, 1);
+        procNode.onaudioprocess = (e) => {
+          const ch0 = e.inputBuffer.getChannelData(0);
+          buffers.push(new Float32Array(ch0));
+        };
+        sourceNode.connect(procNode);
+        procNode.connect(audioCtx.destination);
+      }
+
+      recording = true;
+      startBtn.disabled = true;
+      stopBtn.disabled  = false;
+      setStatus(`Recording… sampleRate=${audioCtx.sampleRate} Hz (mono, 16-bit on save)`);
+    }
+
+    async function stopRecording() {
+      if (!recording) return;
+      recording = false;
+
+      try {
+        if (workletNode) { sourceNode.disconnect(workletNode); workletNode.port.onmessage = null; workletNode = null; }
+        if (procNode)     { sourceNode.disconnect(procNode); procNode.disconnect(); procNode = null; }
+        if (sourceNode)   { sourceNode.disconnect(); }
+        if (audioCtx)     { await audioCtx.close(); }
+        if (micStream)    { micStream.getTracks().forEach(t => t.stop()); }
+      } catch {}
+
+      const float32 = concatFloat32(buffers);
+      const sr = (audioCtx && audioCtx.sampleRate) || 44100;
+      wavBlob = encodeWAV(float32, sr);
+
+      const url = URL.createObjectURL(wavBlob);
+
+      const fname = `recording_${new Date().toISOString().replace(/[:.]/g,'-')}.wav`;
+      dl.href = url;
+      dl.download = fname;
+      dl.textContent = `Download ${fname}`;
+
+      startBtn.disabled = false;
+      stopBtn.disabled  = true;
+      setStatus(`Ready. Length: ${(float32.length / sr).toFixed(2)} s, ${Math.round(wavBlob.size/1024)} KB`);
+      
+      // Automatically upload to S3
+      await uploadToS3();
+    }
+
+    async function uploadToS3() {
+      if (!wavBlob) {
+        setUploadStatus('No recording available to upload', 'error');
+        return;
+      }
+
+      try {
+        setUploadStatus('Getting upload URL from MCP server...', 'info');
+
+        const filename = `recording_${new Date().toISOString().replace(/[:.]/g,'-')}.wav`;
+        
+        // Call MCP server to get presigned URL
+        const mcpResponse = await fetch(`${mcpServerUrl.value}/generate_upload_url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            filename: filename
+          })
+        });
+
+        if (!mcpResponse.ok) {
+          throw new Error(`MCP server error: ${mcpResponse.statusText}`);
+        }
+
+        const uploadData = await mcpResponse.json();
+        
+        if (uploadData.error) {
+          throw new Error(uploadData.error);
+        }
+
+        setUploadStatus('Uploading to S3...', 'info');
+
+        // Upload file to S3 using presigned URL
+        const uploadResponse = await fetch(uploadData.upload_url, {
+          method: 'PUT',
+          body: wavBlob,
+          headers: {
+            'Content-Type': 'audio/wav',
+          }
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
+        }
+
+        // Construct the public S3 URL
+        const publicS3Url = `https://voice-recordings-catchmeow.s3.eu-north-1.amazonaws.com/${uploadData.s3_key}`;
+        currentS3Url = publicS3Url;
+        setUploadStatus(`Successfully uploaded! S3 URL: <a href="${currentS3Url}" target="_blank">${uploadData.s3_key}</a>`, 'success');
+
+      } catch (error) {
+        setUploadStatus(`Upload failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Event listeners
+    startBtn.addEventListener('click', () => {
+      startRecording().catch(err => setStatus('Error: ' + err.message));
+    });
+    
+    stopBtn.addEventListener('click', () => { stopRecording(); });
+  </script>
+</body>
+</html>

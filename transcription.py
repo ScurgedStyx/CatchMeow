@@ -57,13 +57,11 @@ class AudioTranscriber:
             signed_url = self.client.files.get_signed_url(file_id=uploaded_audio.id)
             
             # Get the transcription
-            transcription_params = {
-                "model": self.model,
-                "file_url": signed_url.url,
-                "language": "en"
-            }
-            
-            transcription_response = self.client.audio.transcriptions.complete(**transcription_params)
+            transcription_response = self.client.audio.transcriptions.complete(
+                model=self.model,
+                file_url=signed_url.url,
+                language="en"
+            )
             
             return transcription_response.text if hasattr(transcription_response, 'text') else str(transcription_response)
             
@@ -95,13 +93,11 @@ class AudioTranscriber:
             signed_url = self.client.files.get_signed_url(file_id=uploaded_audio.id)
             
             # Get the transcription
-            transcription_params = {
-                "model": self.model,
-                "file_url": signed_url.url,
-                "language": "en"
-            }
-            
-            transcription_response = self.client.audio.transcriptions.complete(**transcription_params)
+            transcription_response = self.client.audio.transcriptions.complete(
+                model=self.model,
+                file_url=signed_url.url,
+                language="en"
+            )
             
             return transcription_response.text if hasattr(transcription_response, 'text') else str(transcription_response)
             
