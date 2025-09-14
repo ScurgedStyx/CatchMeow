@@ -3,13 +3,12 @@ Bluff Judge
 Follows the "MCP Server Template" structure.
 """
 from typing import Dict, Any, Optional
-from fastmcp import FastMCP, Context
-#from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import FastMCP, Context
 from pydantic import Field  
 
 import mcp.types as types
 
-mcp = FastMCP("Catch Meow Main Server", port=3000, stateless_http=True, debug=True)
+mcp = FastMCP("Catch Meow Main Server", port=3002, stateless_http=True, debug=True)
 
 # Simple in-memory store keyed by client_id for now there is only 8 people maximum 
 SESSIONS: Dict[str, Dict[str, Any]] = {}
@@ -134,7 +133,7 @@ async def list_all_recording_prompts() -> str:
 
 # -------------------------------------------------------------------
 # PROMPTS - Pre-defined prompt templates for the LLM
-# -------------------------------------------------------------------
+# ----------------------------------------------------------------
 
 @mcp.prompt("Voice recording instructions")
 async def voice_recording_instructions(
