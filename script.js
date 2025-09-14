@@ -1,3 +1,114 @@
+// Profile Management
+const MCP_SERVER_URL = 'http://127.0.0.1:3000'; // Adjust port if needed
+
+async function loadPlayerProfile() {
+    try {
+        console.log('🔄 Loading player profile...');
+        
+        const response = await fetch(`${MCP_SERVER_URL}/tools/get_profile`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                arguments: {}
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('📋 Profile response:', data);
+        
+        // Parse the string result from MCP tool
+        const result = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        
+        if (result.profile && result.profile.name) {
+            updateDashboardWithProfile(result.profile.name, result.profile.favorite_color);
+            console.log(`✅ Profile loaded: ${result.profile.name} (${result.profile.favorite_color})`);
+        } else {
+            console.log('ℹ️ No profile found, using defaults');
+            updateDashboardWithProfile('Current Player', 'white');
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to load profile:', error);
+        // Use defaults on error
+        updateDashboardWithProfile('Current Player', 'white');
+    }
+}
+
+function updateDashboardWithProfile(playerName, favoriteColor) {
+    // Update the player title
+    const titleElement = document.querySelector('.current-player-title');
+    if (titleElement) {
+        titleElement.textContent = playerName;
+        console.log(`📝 Updated title to: ${playerName}`);
+    }
+    
+    // Apply background color
+    applyBackgroundColor(favoriteColor);
+}
+
+function applyBackgroundColor(colorName) {
+    const body = document.body;
+    
+    // Remove any existing color classes
+    body.classList.remove(...Array.from(body.classList).filter(cls => cls.startsWith('bg-')));
+    
+    // Apply new background color
+    const normalizedColor = colorName.toLowerCase().trim();
+    
+    // Map common color names to CSS-friendly values
+    const colorMap = {
+        'red': '#ffebee',
+        'blue': '#e3f2fd', 
+        'green': '#e8f5e8',
+        'yellow': '#fffde7',
+        'orange': '#fff3e0',
+        'purple': '#f3e5f5',
+        'pink': '#fce4ec',
+        'teal': '#e0f2f1',
+        'cyan': '#e0f7fa',
+        'lime': '#f9fbe7',
+        'indigo': '#e8eaf6',
+        'amber': '#fffbf0',
+        'brown': '#efebe9',
+        'grey': '#fafafa',
+        'gray': '#fafafa',
+        'black': '#f5f5f5', // Light gray for black (readability)
+        'white': '#ffffff'
+    };
+    
+    const backgroundColor = colorMap[normalizedColor] || normalizedColor;
+    body.style.backgroundColor = backgroundColor;
+    
+    console.log(`🎨 Applied background color: ${normalizedColor} -> ${backgroundColor}`);
+    
+    // Add a subtle class for additional styling if needed
+    body.classList.add(`bg-${normalizedColor.replace(/[^a-z]/g, '')}`);
+}
+
+// Auto-refresh profile periodically
+let profileRefreshInterval;
+
+function startProfileRefresh() {
+    // Load immediately
+    loadPlayerProfile();
+    
+    // Then refresh every 10 seconds
+    profileRefreshInterval = setInterval(loadPlayerProfile, 10000);
+}
+
+function stopProfileRefresh() {
+    if (profileRefreshInterval) {
+        clearInterval(profileRefreshInterval);
+        profileRefreshInterval = null;
+    }
+}
+
 // Progress Bar Color Management
 function getProgressColor(percentage) {
     if (percentage >= 0 && percentage <= 20) {
@@ -150,6 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeProgressBars();
     renderLeaderboard();
     
+    // Start profile loading and auto-refresh
+    startProfileRefresh();
+    
     // Add event listeners for buttons
     const addButton = document.querySelector('.add-btn');
     const removeButton = document.querySelector('.remove-btn');
@@ -165,6 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Optional: Run demo mode (uncomment to enable)
     // runDemo();
 });
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', stopProfileRefresh);
 
 // Utility Functions
 function generateRandomScores() {
@@ -186,7 +303,11 @@ window.BluffDashboard = {
     addNewPlayer,
     removeLastPlayer,
     generateRandomScores,
-    runDemo
+    runDemo,
+    loadPlayerProfile,
+    updateDashboardWithProfile,
+    startProfileRefresh,
+    stopProfileRefresh
 };
 
 // Console commands for testing
