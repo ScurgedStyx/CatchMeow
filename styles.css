@@ -13,14 +13,39 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: background-color 0.5s ease;
+}
+
+/* Dynamic Background Support */
+body.bg-red { background-color: #ffebee !important; }
+body.bg-blue { background-color: #e3f2fd !important; }
+body.bg-green { background-color: #e8f5e8 !important; }
+body.bg-yellow { background-color: #fffde7 !important; }
+body.bg-orange { background-color: #fff3e0 !important; }
+body.bg-purple { background-color: #f3e5f5 !important; }
+body.bg-pink { background-color: #fce4ec !important; }
+body.bg-teal { background-color: #e0f2f1 !important; }
+body.bg-cyan { background-color: #e0f7fa !important; }
+body.bg-lime { background-color: #f9fbe7 !important; }
+body.bg-indigo { background-color: #e8eaf6 !important; }
+body.bg-amber { background-color: #fffbf0 !important; }
+body.bg-brown { background-color: #efebe9 !important; }
+body.bg-grey,
+body.bg-gray { background-color: #fafafa !important; }
+body.bg-black { background-color: #f5f5f5 !important; }
+body.bg-white { background-color: #ffffff !important; }
+
+/* Enhanced navbar for better visibility on colored backgrounds */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
 }
 
 /* Navigation Bar Styles */
 .navbar {
     padding: 15px 0;
-    background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
     width: 100%;
     flex-shrink: 0;
 }
