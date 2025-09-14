@@ -13,39 +13,14 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: background-color 0.5s ease;
-}
-
-/* Dynamic Background Support */
-body.bg-red { background-color: #ffebee !important; }
-body.bg-blue { background-color: #e3f2fd !important; }
-body.bg-green { background-color: #e8f5e8 !important; }
-body.bg-yellow { background-color: #fffde7 !important; }
-body.bg-orange { background-color: #fff3e0 !important; }
-body.bg-purple { background-color: #f3e5f5 !important; }
-body.bg-pink { background-color: #fce4ec !important; }
-body.bg-teal { background-color: #e0f2f1 !important; }
-body.bg-cyan { background-color: #e0f7fa !important; }
-body.bg-lime { background-color: #f9fbe7 !important; }
-body.bg-indigo { background-color: #e8eaf6 !important; }
-body.bg-amber { background-color: #fffbf0 !important; }
-body.bg-brown { background-color: #efebe9 !important; }
-body.bg-grey,
-body.bg-gray { background-color: #fafafa !important; }
-body.bg-black { background-color: #f5f5f5 !important; }
-body.bg-white { background-color: #ffffff !important; }
-
-/* Enhanced navbar for better visibility on colored backgrounds */
-.navbar {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
 }
 
 /* Navigation Bar Styles */
 .navbar {
-    padding: 15px 0;
+    padding: 10px 0;
+    background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
     width: 100%;
     flex-shrink: 0;
 }
@@ -54,28 +29,29 @@ body.bg-white { background-color: #ffffff !important; }
     text-align: center;
     font-weight: bold;
     color: #764ba2;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-shadow: 1px 1px 3px rgba(118, 75, 162, 0.3);
 }
 
 .features-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 10px;
+    gap: 25px;
     width: 100%;
-    padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
 }
 
 .feature-box {
     background: white;
-    padding: 12px 8px;
-    border-radius: 8px;
+    padding: 18px 15px;
+    border-radius: 12px;
     border: 2px solid #764ba2;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    min-height: 80px;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -108,25 +84,110 @@ body.bg-white { background-color: #ffffff !important; }
     position: relative;
 }
 
-/* Progress Bar Color Classes */
-.progress-green {
-    background: linear-gradient(90deg, #4CAF50, #81C784);
+/* Progress Bar Color Classes - Metric-Based */
+/* Pause Ratio Colors (Lower is better - Green to Red) */
+.pause-ratio-excellent {
+    background: linear-gradient(90deg, #4CAF50, #81C784); /* 0-10% */
 }
 
-.progress-yellow {
-    background: linear-gradient(90deg, #FFC107, #FFD54F);
+.pause-ratio-good {
+    background: linear-gradient(90deg, #8BC34A, #AED581); /* 10-20% */
 }
 
-.progress-orange {
-    background: linear-gradient(90deg, #FF9800, #FFB74D);
+.pause-ratio-fair {
+    background: linear-gradient(90deg, #FFC107, #FFD54F); /* 20-30% */
 }
 
-.progress-dark-orange {
-    background: linear-gradient(90deg, #FF5722, #FF8A65);
+.pause-ratio-poor {
+    background: linear-gradient(90deg, #FF9800, #FFB74D); /* 30-40% */
 }
 
-.progress-red {
-    background: linear-gradient(90deg, #F44336, #EF5350);
+.pause-ratio-bad {
+    background: linear-gradient(90deg, #F44336, #EF5350); /* 40%+ */
+}
+
+/* Pause Count Colors (Lower count is better) */
+.pause-count-excellent {
+    background: linear-gradient(90deg, #4CAF50, #81C784); /* 0-5 pauses */
+}
+
+.pause-count-good {
+    background: linear-gradient(90deg, #8BC34A, #AED581); /* 6-15 pauses */
+}
+
+.pause-count-fair {
+    background: linear-gradient(90deg, #FFC107, #FFD54F); /* 16-25 pauses */
+}
+
+.pause-count-poor {
+    background: linear-gradient(90deg, #FF9800, #FFB74D); /* 26-35 pauses */
+}
+
+.pause-count-bad {
+    background: linear-gradient(90deg, #F44336, #EF5350); /* 35+ pauses */
+}
+
+/* Mean F0 Colors (Normal speaking range is good) */
+.mean-f0-low {
+    background: linear-gradient(90deg, #FF9800, #FFB74D); /* Below 80Hz */
+}
+
+.mean-f0-normal-low {
+    background: linear-gradient(90deg, #4CAF50, #81C784); /* 80-120Hz */
+}
+
+.mean-f0-normal-mid {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A); /* 120-180Hz */
+}
+
+.mean-f0-normal-high {
+    background: linear-gradient(90deg, #4CAF50, #81C784); /* 180-250Hz */
+}
+
+.mean-f0-high {
+    background: linear-gradient(90deg, #FF9800, #FFB74D); /* Above 250Hz */
+}
+
+/* Mean Energy Colors (Moderate energy is ideal for speech) */
+.mean-energy-very-low {
+    background: linear-gradient(90deg, #F44336, #EF5350); /* Very quiet */
+}
+
+.mean-energy-low {
+    background: linear-gradient(90deg, #FF9800, #FFB74D); /* Too quiet */
+}
+
+.mean-energy-optimal {
+    background: linear-gradient(90deg, #4CAF50, #81C784); /* Good energy */
+}
+
+.mean-energy-high {
+    background: linear-gradient(90deg, #FFC107, #FFD54F); /* Loud */
+}
+
+.mean-energy-very-high {
+    background: linear-gradient(90deg, #F44336, #EF5350); /* Too loud */
+}
+
+/* Max Energy Colors (Peak energy levels - Higher can indicate excitement/stress) */
+.max-energy-very-low {
+    background: linear-gradient(90deg, #F44336, #EF5350); /* Very low peak */
+}
+
+.max-energy-low {
+    background: linear-gradient(90deg, #FF9800, #FFB74D); /* Low peak */
+}
+
+.max-energy-normal {
+    background: linear-gradient(90deg, #4CAF50, #81C784); /* Normal peak */
+}
+
+.max-energy-high {
+    background: linear-gradient(90deg, #FFC107, #FFD54F); /* High peak */
+}
+
+.max-energy-very-high {
+    background: linear-gradient(90deg, #9C27B0, #BA68C8); /* Very high peak - Purple for intensity */
 }
 
 .percentage {
@@ -274,24 +335,25 @@ body.bg-white { background-color: #ffffff !important; }
 .score-display {
     background: rgba(118, 75, 162, 0.9);
     color: white;
-    padding: 20px;
-    border-radius: 15px;
+    padding: 40px 50px;
+    border-radius: 20px;
     text-align: center;
     backdrop-filter: blur(5px);
     box-shadow: 0 8px 25px rgba(118, 75, 162, 0.3);
+    min-width: 250px;
 }
 
 .score-label {
     display: block;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .score-value {
     display: block;
-    font-size: 48px;
+    font-size: 72px;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     animation: pulse 2s infinite;

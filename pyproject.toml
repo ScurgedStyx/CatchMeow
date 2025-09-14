@@ -13,4 +13,8 @@ dependencies = [
     "requests>=2.31.0",
     "mistralai>=0.4.0",
     "fastmcp>=2.12.3",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "librosa>=0.10.0",
+    "datasets>=2.14.0",
 ]
